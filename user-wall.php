@@ -1,3 +1,45 @@
+<?php session_start(); 
+error_reporting(0);
+$servername = "localhost";
+$usernam = "root";
+$password = "";
+$dbname = "project";
+$connection = new mysqli($servername,$usernam,$password,$dbname);
+if ($connection->connect_error) {
+    die("Connection failed: " . $connection->connect_error);
+} 
+$id=mysql_real_escape_string($_SESSION['username']);
+$sql="Select like_user_id,like_project_id FROM `like` join (Select followee from follow where follower='$id')V on like.like_user_id=V.followee and TIMESTAMPDIFF(DAY,like_date,NOW())<20";
+$resultquery=$connection->query($sql);
+
+if(!$resultquery)
+{
+    
+ echo "Error in Sql";   
+    
+}
+
+
+
+$user_id = mysql_real_escape_string($_SESSION['username']);
+
+$tag="SELECT project_id, p_title, p_description, imagename FROM project where p_tags in (SELECT tagname from taghistory where user_id='$user_id')";
+
+$tag2="SELECT project_id, p_title, p_description, imagename FROM project order by pledge_start_date desc limit 5";
+
+$tagresult=$connection->query($tag);
+
+$tagresult2=$connection->query($tag2);
+
+$search="Select * from user_recommendation where user_id='$user_id'";
+$result=$connection->query($search);
+
+
+
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,13 +49,15 @@
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   <link rel="stylesheet" href="css/bootstrap.min.css">
   <link rel="stylesheet" href="css/styles.css">
+  <script src="js/jquery.validate.min.js"></script>
   <title>GetFunded</title>
+
 </head>
 
 <body>
 
 <div class="container">
-            <a class="brand" style="display: flex; justify-content: center; margin-top:10px;" href="#">
+            <a class="brand" style="display: flex; justify-content: center; margin-top:10px;" href="user-wall.php">
                 <img src="images/1_Primary_logo_on_transparent_377x63.png" style="height:30px;">
             </a>
 </div> <!--container-->
@@ -32,25 +76,43 @@
         <div class="collapse navbar-collapse" id="getFundedNavMenu">
 
             <div class="nav navbar-nav mr-auto">
-                <a class="nav-item nav-link active" href="#">Home</a>
+                <a class="nav-item nav-link active" href="user-wall.php">Home</a>
                 <a class="nav-item nav-link" href="#">Explore</a>
             </div> <!-- navbar -->  
             
             <div class="nav navbar-nav mr-2"> 
-                <form class="nav-item form-inline">
-                    <input class="form-control" placeholder="Search">
-                        <button class="btn btn-info ">
+                <form method="post" action="searchprojects.php" class="nav-item form-inline">
+                    <input type="text" name="usersearch" id="usersearch" class="form-control" placeholder="Search" required/>
+                        <button type="submit" class="btn btn-info ">
                             <img src="images/698956-icon-111-search-128.png" style="width:16px">
                         </button>
                 </form>
-                <a class= "nav-item nav-link" href="login.html">Log in</a>
-                <a class="nav-item nav-link" href="signup.html">Sign Up</a> 
+
+                <div class="dropdown">
+                    <a class= "nav-item nav-link dropdown-toggle" data-toggle="dropdown" href="#">Account</a> 
+                    
+                    <div class="dropdown-menu-right dropdown-menu" >
+                        
+
+                            <a class="dropdown-item" href="project_stats.php">Project stats</a>
+                            <a class="dropdown-item" href="searchbytag.php">Search by tag</a>
+                            <a class="dropdown-item" href="list_projects.php">Project list</a>
+                            <a class="dropdown-item" href="projects_pledged.php">Project pledged</a>
+                            <a class="dropdown-item" href="project_complete.php">complete a project?</a>
+                            <a class="dropdown-item" href="logout.php">Log out</a>
+
+                    </div>
+                </div> <!--dropdown-->
+
             </div>
         </div> <!-- collapse -->
 
         
     </nav>
 
+<div class="container">
+    <h2> <?php echo "Welcome"." ".$_SESSION['username']; ?></h2>
+</div>
 
     <!-- #region Jssor Slider Begin -->
     <script src="js/jquery-1.11.3.min.js" type="text/javascript"></script>
@@ -164,26 +226,18 @@
             <div style="position:absolute;display:block;background:url('images/loading.gif') no-repeat center center;top:0px;left:0px;width:100%;height:100%;"></div>
         </div>
         <div data-u="slides" style="cursor:default;position:relative;top:0px;left:0px;width:1300px;height:500px;overflow:hidden;">
-            <div>
-                <img data-u="image" src="images/red.jpg" />
-                <div style="position:absolute;top:30px;left:30px;width:480px;height:120px;z-index:0;font-size:50px;color:#ffffff;line-height:60px;">TOUCH SWIPE SLIDER</div>
-                <div style="position:absolute;top:300px;left:30px;width:480px;height:120px;z-index:0;font-size:30px;color:#ffffff;line-height:38px;">Build your slider with anything, includes image, content, text, html, photo, picture</div>
-                <div style="position:absolute;top:120px;left:650px;width:470px;height:220px;z-index:0;">
-                    <img style="position:absolute;top:0px;left:0px;width:470px;height:220px;z-index:0;" src="images/c-phone-horizontal.png" />
-                    <div style="position:absolute;top:4px;left:45px;width:379px;height:213px;z-index:0; overflow:hidden;">
-                        <img data-u="caption" data-t="0" style="position:absolute;top:0px;left:0px;width:379px;height:213px;z-index:0;" src="images/c-slide-1.jpg" />
-                        <img data-u="caption" data-t="1" style="position:absolute;top:0px;left:379px;width:379px;height:213px;z-index:0;" src="images/c-slide-3.jpg" />
-                    </div>
-                    <img style="position:absolute;top:4px;left:45px;width:379px;height:213px;z-index:0;" src="images/c-navigator-horizontal.png" />
-                    <img data-u="caption" data-t="2" style="position:absolute;top:476px;left:454px;width:63px;height:77px;z-index:0;" src="images/hand.png" />
-                </div>
-            </div>
-            <div>
-                <img data-u="image" src="images/purple.jpg" />
-            </div>
-            <div>
-                <img data-u="image" src="images/blue.jpg" />
-            </div>
+
+
+        <?php
+            while($rowtag2=$tagresult2->fetch_assoc()){
+                    echo '<div><a class="tabindex" href=view_project.php?id=' . $rowtag2['project_id'] . ">";
+                    echo '<img height=500 width=1300 src = ' .$rowtag2['imagename'] . ' ></a></div>';
+                   
+
+            }
+            
+             ?>
+            
         </div>
         <!-- Bullet Navigator -->
         <div data-u="navigator" class="jssorb05" style="bottom:16px;right:16px;" data-autocenter="1">
@@ -200,46 +254,47 @@
 <hr>
 <div class="container">
     
-    <h2>New Arrivals</h2>
+
+
+
+    <h2>Recommended </h2>
     <div class="row">
+        <div class="col-sm-8 mr-auto">
+            <div class="row">
 
-        <section class="col-4">
+            <?php
+            while($rowtag=$tagresult->fetch_assoc()){
+                    echo "<section class=col-sm-6>";
+                    echo '<a class="tabindex" href=view_project.php?id=' . $rowtag['project_id'] . ">";
+                    echo '<img width="100" height="100" src = ' .$rowtag['imagename'] . ' >';
+                    echo "<h4> ". $rowtag['p_title'] . "</h4>";
+                    echo "<p>" . $rowtag['p_description'] ."</p>";
+                    echo "</section></a>";
 
-            <img style="width:100px; height:100px;" src = "image.jpg" >
-            <h4> Project #1</h1
-            <p> Some description in plain verbose</p>
-        </section>
+            }
+             
+      ?>
+              
+                
 
-         <section class="col-4">
 
-            <img  style="width:100px; height:100px;" src = "image.jpg" >
-            <h4> Project #1</h1
-            <p> Some description in plain verbose</p>
-        </section>
+            </div> <!-- inner row -->
+            <br>
+            <br>
+            
+        </div> <!-- col-8 -->
 
-         <section class="col-4">
 
-            <img style="width:100px; height:100px;" src = "image.jpg" >
-            <h4> Project #1</h1
-            <p> Some description in plain verbose</p>
-        </section>
-
-         <section class="col-4">
-
-            <img style="width:100px; height:100px;" src = "image.jpg" >
-            <h4> Project #1</h1
-            <p> Some description in plain verbose</p>
-        </section>
-
-         <section class="col-4">
-
-            <img style="width:100px; height:100px;" src = "image.jpg" >
-            <h4> Project #1</h1
-            <p> Some description in plain verbose</p>
-        </section>
-
-    </div> <!--row-->
-
+<hr style="width:1; size:500;">
+        <div class="col-3 mr-3">
+            <h2>Activities: </h2>
+            <hr>
+            <?php while($row=$resultquery->fetch_assoc()){?>
+            <p> User <?php echo $row['like_user_id']?> Followed Project <?php echo $row['like_project_id']?></p>
+            <?php }?>
+        </div><!-- col-4 -->
+    </div> <!-- row -->
+            
 </div><!--container-->
 
 
